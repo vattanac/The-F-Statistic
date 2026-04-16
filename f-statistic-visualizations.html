@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>F-Statistic Visualizations — Interactive Lab</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-0: #0a0b14;
+    --bg-1: #111322;
+    --bg-2: #161a2e;
+    --bg-3: #1e2340;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --text-0: #f1f3fb;
+    --text-1: #b8bdd4;
+    --text-2: #7d83a0;
+    --accent: #7b5cff;
+    --accent-2: #00e0c7;
+    --accent-3: #ff6b9d;
+    --accent-4: #ffb648;
+    --danger: #ff4d6d;
+    --success: #22d3a5;
+    --glow: 0 0 40px rgba(123, 92, 255, 0.35);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background:
+      radial-gradient(1200px 700px at 85% -10%, rgba(123, 92, 255, 0.18), transparent 50%),
+      radial-gradient(900px 600px at -5% 30%, rgba(0, 224, 199, 0.12), transparent 55%),
+      radial-gradient(800px 500px at 50% 110%, rgba(255, 107, 157, 0.10), transparent 55%),
+      var(--bg-0);
+    color: var(--text-0);
+    min-height: 100vh;
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  .app { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: sticky; top: 0; height: 100vh;
+    background: linear-gradient(180deg, rgba(17, 19, 34, 0.95), rgba(10, 11, 20, 0.95));
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid var(--border);
+    padding: 28px 18px;
+    display: flex; flex-direction: column; overflow-y: auto;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 10px 22px;
+    border-bottom: 1px solid var(--border); margin-bottom: 18px;
+  }
+  .brand .logo {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: conic-gradient(from 210deg, var(--accent-2), var(--accent-3), var(--accent-4), var(--accent-2));
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 17px; color: #0a0b14;
+    box-shadow: var(--glow);
+  }
+  .brand .title { font-weight: 700; font-size: 15px; letter-spacing: 0.2px; }
+  .brand .subtitle { font-size: 11px; color: var(--text-2); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .nav-label {
+    font-size: 10.5px; color: var(--text-2); text-transform: uppercase;
+    letter-spacing: 1.4px; padding: 8px 12px; margin-top: 10px;
+  }
+  .nav a {
+    display: flex; align-items: center; gap: 11px;
+    padding: 10px 12px; color: var(--text-1); text-decoration: none;
+    border-radius: 10px; font-size: 13.5px; font-weight: 500;
+    margin: 2px 0; transition: all 0.2s ease; position: relative;
+  }
+  .nav a:hover { background: rgba(255, 255, 255, 0.04); color: var(--text-0); }
+  .nav a.active {
+    background: linear-gradient(90deg, rgba(0, 224, 199, 0.18), rgba(123, 92, 255, 0.02));
+    color: var(--text-0);
+  }
+  .nav a.active::before {
+    content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+    width: 3px; border-radius: 3px;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  }
+  .nav .icon {
+    width: 22px; height: 22px; display: grid; place-items: center;
+    border-radius: 6px; background: rgba(255, 255, 255, 0.04); font-size: 12px;
+  }
+  .side-footer {
+    margin-top: auto; padding: 16px 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-2);
+  }
+  .back-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; margin-bottom: 10px;
+    border-radius: 10px; text-decoration: none;
+    color: var(--accent-2); font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(0, 224, 199, 0.25);
+    background: rgba(0, 224, 199, 0.06);
+    transition: all 0.2s ease;
+  }
+  .back-link:hover { background: rgba(0, 224, 199, 0.12); }
+
+  /* MAIN */
+  main { padding: 48px 56px 80px; max-width: 1200px; }
+
+  .hero {
+    position: relative; padding: 44px 44px 40px;
+    border-radius: 22px;
+    background:
+      radial-gradient(600px 300px at 85% 0%, rgba(0, 224, 199, 0.22), transparent 70%),
+      linear-gradient(135deg, rgba(30, 35, 64, 0.6), rgba(17, 19, 34, 0.8));
+    border: 1px solid var(--border-strong);
+    overflow: hidden; margin-bottom: 40px;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11.5px; letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--accent-2); font-weight: 600;
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(0, 224, 199, 0.10);
+    border: 1px solid rgba(0, 224, 199, 0.25);
+  }
+  .hero h1 {
+    font-size: 42px; font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.08; margin: 18px 0 14px;
+    background: linear-gradient(120deg, #fff 20%, #b8bdd4 60%, #00e0c7 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p.lead { font-size: 17px; color: var(--text-1); max-width: 760px; }
+
+  section { margin-bottom: 64px; scroll-margin-top: 24px; }
+  section h2 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.01em;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 14px;
+  }
+  section h2 .num {
+    display: inline-grid; place-items: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, rgba(0, 224, 199, 0.22), rgba(123, 92, 255, 0.12));
+    border: 1px solid var(--border-strong);
+    font-size: 14px; font-weight: 700; color: var(--accent-2);
+  }
+  section .kicker {
+    font-size: 13px; color: var(--text-2); margin-bottom: 20px; padding-left: 50px;
+  }
+  section p { color: var(--text-1); margin-bottom: 14px; font-size: 15.5px; }
+  section strong { color: var(--text-0); font-weight: 600; }
+
+  .card {
+    background: linear-gradient(135deg, rgba(123, 92, 255, 0.06), rgba(0, 224, 199, 0.03)), var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px 28px; margin: 18px 0;
+    position: relative; overflow: hidden;
+  }
+  .card h3 { font-size: 17px; font-weight: 600; margin-bottom: 14px; color: var(--text-0); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .slider-wrap {
+    padding: 14px 16px; background: var(--bg-2);
+    border-radius: 10px; border: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .slider-wrap label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--text-2);
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px;
+  }
+  .slider-wrap .value-out { color: var(--accent-2); font-weight: 700; font-size: 14px; text-transform: none; letter-spacing: 0; }
+  input[type="range"] {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 5px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(123,92,255,0.3);
+  }
+
+  .readout-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-top: 16px;
+  }
+  .readout {
+    background: var(--bg-3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+  }
+  .readout .lbl { font-size: 10.5px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.6px; }
+  .readout .val {
+    font-size: 22px; font-weight: 800; margin-top: 4px;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .chart-wrap {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; margin-top: 14px;
+    height: 340px; position: relative;
+  }
+  .chart-wrap-sm { height: 260px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; font-size: 13px; font-weight: 600;
+    border-radius: 10px; border: 1px solid var(--border-strong);
+    background: linear-gradient(135deg, rgba(123,92,255,0.18), rgba(0,224,199,0.12));
+    color: var(--text-0); cursor: pointer; text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .btn:hover { transform: translateY(-1px); border-color: var(--accent-2); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+
+  .verdict {
+    padding: 14px 18px; border-radius: 10px;
+    margin-top: 16px; font-size: 14px;
+    border-left: 3px solid var(--accent-2);
+    background: rgba(0, 224, 199, 0.06);
+  }
+  .verdict.warn { border-color: var(--accent-4); background: rgba(255, 182, 72, 0.07); }
+  .verdict.bad  { border-color: var(--danger);   background: rgba(255, 77, 109, 0.07); }
+  .verdict.good { border-color: var(--success);  background: rgba(34, 211, 165, 0.08); }
+
+  .data-dots {
+    background: var(--bg-2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; height: 280px; position: relative;
+    margin-top: 14px; overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid var(--border); font-size: 13.5px;
+  }
+  th {
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--text-2); font-weight: 600;
+  }
+  td { color: var(--text-1); }
+
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 6px; letter-spacing: 0.4px;
+  }
+  .tag.good { background: rgba(34,211,165,0.15); color: var(--success); }
+  .tag.bad  { background: rgba(255,77,109,0.15); color: var(--danger); }
+  .tag.warn { background: rgba(255,182,72,0.15); color: var(--accent-4); }
+
+  code.inline {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    background: rgba(123, 92, 255, 0.12); color: var(--accent-2);
+    padding: 2px 7px; border-radius: 5px; font-size: 13px;
+  }
+
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 5px; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    main { padding: 32px 22px; }
+    .hero { padding: 32px 24px; }
+    .hero h1 { font-size: 30px; }
+    .readout-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">📊</div>
+      <div>
+        <div class="title">Viz Lab</div>
+        <div class="subtitle">F-Statistic · Interactive</div>
+      </div>
+    </div>
+
+    <a href="f-statistic-explained.html" class="back-link">← Back to Main Guide</a>
+
+    <div class="nav-label">Simulations</div>
+    <nav class="nav">
+      <a href="#sim-anova" class="active"><span class="icon">⚙</span> Live ANOVA Simulator</a>
+      <a href="#sim-dots"><span class="icon">⋯</span> Scatter Visualization</a>
+      <a href="#sim-dist"><span class="icon">∫</span> F-Distribution Curve</a>
+    </nav>
+
+    <div class="nav-label">Comparisons</div>
+    <nav class="nav">
+      <a href="#sim-compare"><span class="icon">⚖</span> Signal vs Noise</a>
+      <a href="#sim-random"><span class="icon">🎲</span> Random Sampling</a>
+    </nav>
+
+    <div class="nav-label">Reference</div>
+    <nav class="nav">
+      <a href="#sim-table"><span class="icon">📋</span> Critical Values</a>
+    </nav>
+
+    <div class="side-footer">
+      Interactive visualizations powered by Chart.js · Open-source reference for understanding ANOVA.
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <div class="hero">
+      <span class="eyebrow">◉ Visualization Lab · Interactive</span>
+      <h1>See the F-Statistic<br/>in Motion.</h1>
+      <p class="lead">Play with live data, drag sliders, reshape distributions, and watch how the F-statistic responds in real time. Every chart here reacts to your input.</p>
+      <div class="btn-row">
+        <a class="btn" href="f-statistic-explained.html">📖 Read the Full Guide</a>
+        <a class="btn" href="#sim-anova">▶ Start Exploring</a>
+      </div>
+    </div>
+
+    <!-- SECTION 1: LIVE ANOVA SIMULATOR -->
+    <section id="sim-anova">
+      <h2><span class="num">01</span> Live ANOVA Simulator</h2>
+      <div class="kicker">Adjust group means and spread — F computes instantly</div>
+
+      <div class="card">
+        <h3>Configure your 3 groups</h3>
+        <div class="grid-2">
+          <div>
+            <div class="slider-wrap">
+              <label>Mean of Group A <span class="value-out" id="m1Out">72</span></label>
+              <input type="range" id="m1" min="50" max="100" value="72" />
+            </div>
+            <div class="slider-wrap">
+              <label>Mean of Group B <span class="value-out" id="m2Out">80</span></label>
+              <input type="range" id="m2" min="50" max="100" value="80" />
+            </div>
+            <div class="slider-wrap">
+              <label>Mean of Group C <span class="value-out" id="m3Out">88</span></label>
+              <input type="range" id="m3" min="50" max="100" value="88" />
+            </div>
+          </div>
+          <div>
+            <div class="slider-wrap">
+              <label>Within-group std (noise) <span class="value-out" id="sdOut">2.5</span></label>
+              <input type="range" id="sd" min="0.5" max="15" value="2.5" step="0.5" />
+            </div>
+            <div class="slider-wrap">
+              <label>Sample size per group <span class="value-out" id="nOut">20</span></label>
+              <input type="range" id="n" min="3" max="50" value="20" />
+            </div>
+            <div class="btn-row">
+              <button class="btn" id="resample">🎲 Resample</button>
+              <button class="btn" id="preset1">📉 Low F preset</button>
+              <button class="btn" id="preset2">📈 High F preset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="readout-grid">
+          <div class="readout">
+            <div class="lbl">F-Statistic</div>
+            <div class="val" id="fVal">—</div>
+          </div>
+          <div class="readout">
+            <div class="lbl">P-value (approx)</div>
+            <div class="val" id="pVal">—</div>
+          </div>
+          <div class="readout">
+            <div class="lbl">Decision @ α=0.05</div>
+            <div class="val" id="decVal" style="font-size:16px;">—</div>
+          </div>
+        </div>
+
+        <div class="verdict" id="verdictBox">Adjust sliders to see the F-statistic react.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: SCATTER -->
+    <section id="sim-dots">
+      <h2><span class="num">02</span> Scatter Visualization</h2>
+      <div class="kicker">Watch individual data points form distinct (or overlapping) clusters</div>
+
+      <div class="card">
+        <h3>Data points from the simulator above</h3>
+        <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+        <p style="margin-top:14px; font-size:13.5px;">Each dot is a single observation. Horizontal lines mark each group's mean. Thinner clusters with farther-apart means produce a larger F.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 3: F DISTRIBUTION -->
+    <section id="sim-dist">
+      <h2><span class="num">03</span> F-Distribution Curve</h2>
+      <div class="kicker">Where does your F fall under the null hypothesis?</div>
+
+      <div class="card">
+        <h3>The F-distribution with your observed F marked</h3>
+        <div class="chart-wrap"><canvas id="fDistChart"></canvas></div>
+        <p style="margin-top:14px; font-size:13.5px;">The curve shows what F values look like when groups are <em>actually identical</em>. The red shaded region is the rejection zone at α = 0.05. Your F (green line) falling inside that region means the result is statistically significant.</p>
+
+        <table style="margin-top:18px;">
+          <thead><tr><th>Degrees of freedom</th><th>Value</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">df₁</code> (between)</td><td id="df1Val">2</td><td>= k − 1 = 3 groups − 1</td></tr>
+            <tr><td><code class="inline">df₂</code> (within)</td><td id="df2Val">57</td><td>= N − k</td></tr>
+            <tr><td>Critical F @ 0.05</td><td id="critVal">3.16</td><td>Reject H₀ if F exceeds this</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4: COMPARE -->
+    <section id="sim-compare">
+      <h2><span class="num">04</span> Signal vs Noise Side-by-Side</h2>
+      <div class="kicker">Two scenarios to train your eye</div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>🔇 Low F Scenario (noise dominates)</h3>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="lowFChart"></canvas></div>
+          <div class="readout-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="readout"><div class="lbl">F</div><div class="val">~1.1</div></div>
+            <div class="readout"><div class="lbl">Verdict</div><div class="val" style="font-size:15px;">Not significant</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>📢 High F Scenario (clean separation)</h3>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="highFChart"></canvas></div>
+          <div class="readout-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="readout"><div class="lbl">F</div><div class="val">~45</div></div>
+            <div class="readout"><div class="lbl">Verdict</div><div class="val" style="font-size:15px;">Strongly significant</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: RANDOM SAMPLING -->
+    <section id="sim-random">
+      <h2><span class="num">05</span> Random Sampling Under H₀</h2>
+      <div class="kicker">If groups are truly equal, what F values do we see by pure chance?</div>
+
+      <div class="card">
+        <h3>1,000 random experiments where all groups have the same mean</h3>
+        <div class="btn-row">
+          <button class="btn" id="runSim">⚡ Run 1,000 simulations</button>
+          <span id="simStatus" style="color:var(--text-2); font-size:13px; align-self:center;"></span>
+        </div>
+        <div class="chart-wrap"><canvas id="histChart"></canvas></div>
+        <p style="margin-top:14px; font-size:13.5px;">Even when there's <strong>no real difference</strong>, F varies by chance. Most values cluster near 1; only a small tail goes above the critical value. That tail is what makes α = 0.05 meaningful.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 6: TABLE -->
+    <section id="sim-table">
+      <h2><span class="num">06</span> Critical F Values Reference</h2>
+      <div class="kicker">Quick lookup at α = 0.05</div>
+
+      <div class="card">
+        <h3>F critical values at α = 0.05</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>df₁ ↓ / df₂ →</th>
+              <th>5</th><th>10</th><th>20</th><th>30</th><th>60</th><th>120</th><th>∞</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>1</strong></td><td>6.61</td><td>4.96</td><td>4.35</td><td>4.17</td><td>4.00</td><td>3.92</td><td>3.84</td></tr>
+            <tr><td><strong>2</strong></td><td>5.79</td><td>4.10</td><td>3.49</td><td>3.32</td><td>3.15</td><td>3.07</td><td>3.00</td></tr>
+            <tr><td><strong>3</strong></td><td>5.41</td><td>3.71</td><td>3.10</td><td>2.92</td><td>2.76</td><td>2.68</td><td>2.60</td></tr>
+            <tr><td><strong>4</strong></td><td>5.19</td><td>3.48</td><td>2.87</td><td>2.69</td><td>2.53</td><td>2.45</td><td>2.37</td></tr>
+            <tr><td><strong>5</strong></td><td>5.05</td><td>3.33</td><td>2.71</td><td>2.53</td><td>2.37</td><td>2.29</td><td>2.21</td></tr>
+            <tr><td><strong>10</strong></td><td>4.74</td><td>2.98</td><td>2.35</td><td>2.16</td><td>1.99</td><td>1.91</td><td>1.83</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px; font-size:13px; color:var(--text-2);">Rule: if your computed F exceeds the value in the table at your df₁ and df₂, you reject the null hypothesis at the 5% significance level.</p>
+
+        <div class="btn-row" style="margin-top:20px;">
+          <a class="btn" href="f-statistic-explained.html">← Back to Main Guide</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // --- Sidebar scrollspy ---
+  const links = document.querySelectorAll('.nav a[href^="#"]');
+  const sections = [...links].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY + 140;
+    let current = sections[0];
+    for (const s of sections) { if (s.offsetTop <= y) current = s; }
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }, { passive: true });
+
+  // --- Gaussian sampler (Box-Muller) ---
+  function gauss(mean, sd) {
+    const u = Math.random() || 1e-9, v = Math.random() || 1e-9;
+    return mean + sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  // --- Compute F given arrays per group ---
+  function computeF(groups) {
+    const k = groups.length;
+    const all = groups.flat();
+    const N = all.length;
+    const gMean = all.reduce((s,x) => s+x, 0) / N;
+    let SSB = 0, SSW = 0;
+    for (const g of groups) {
+      const m = g.reduce((s,x) => s+x, 0) / g.length;
+      SSB += g.length * (m - gMean) ** 2;
+      for (const x of g) SSW += (x - m) ** 2;
+    }
+    const MSB = SSB / (k - 1);
+    const MSW = SSW / (N - k);
+    return { F: MSB / (MSW || 1e-9), df1: k - 1, df2: N - k, groupMeans: groups.map(g => g.reduce((s,x)=>s+x,0)/g.length) };
+  }
+
+  // --- Approximate F CDF using series (good enough for teaching) ---
+  // Using regularized incomplete beta via continued fraction
+  function logGamma(x) {
+    const c = [76.18009172947146, -86.50532032941677, 24.01409824083091,
+               -1.231739572450155, 0.001208650973866179, -0.000005395239384953];
+    let y = x, t = x + 5.5;
+    t -= (x + 0.5) * Math.log(t);
+    let s = 1.000000000190015;
+    for (let i = 0; i < 6; i++) s += c[i] / ++y;
+    return -t + Math.log(2.5066282746310005 * s / x);
+  }
+  function betacf(a, b, x) {
+    const MAXIT = 200, EPS = 3e-7, FPMIN = 1e-30;
+    const qab = a + b, qap = a + 1, qam = a - 1;
+    let c = 1, d = 1 - qab * x / qap;
+    if (Math.abs(d) < FPMIN) d = FPMIN;
+    d = 1 / d; let h = d;
+    for (let m = 1; m <= MAXIT; m++) {
+      const m2 = 2*m;
+      let aa = m*(b-m)*x / ((qam+m2)*(a+m2));
+      d = 1 + aa*d; if (Math.abs(d) < FPMIN) d = FPMIN;
+      c = 1 + aa/c; if (Math.abs(c) < FPMIN) c = FPMIN;
+      d = 1/d; h *= d*c;
+      aa = -(a+m)*(qab+m)*x/((a+m2)*(qap+m2));
+      d = 1 + aa*d; if (Math.abs(d) < FPMIN) d = FPMIN;
+      c = 1 + aa/c; if (Math.abs(c) < FPMIN) c = FPMIN;
+      d = 1/d; const del = d*c; h *= del;
+      if (Math.abs(del - 1) < EPS) break;
+    }
+    return h;
+  }
+  function betaI(a, b, x) {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    const bt = Math.exp(logGamma(a+b) - logGamma(a) - logGamma(b) + a*Math.log(x) + b*Math.log(1-x));
+    if (x < (a+1)/(a+b+2)) return bt * betacf(a, b, x) / a;
+    return 1 - bt * betacf(b, a, 1-x) / b;
+  }
+  function fPvalue(F, df1, df2) {
+    if (F <= 0) return 1;
+    const x = df2 / (df2 + df1 * F);
+    return betaI(df2/2, df1/2, x);
+  }
+  // PDF of F
+  function fPdf(x, df1, df2) {
+    if (x <= 0) return 0;
+    const logNum = (df1/2) * Math.log(df1) + (df2/2) * Math.log(df2) + (df1/2 - 1) * Math.log(x);
+    const logDen = ((df1+df2)/2) * Math.log(df1*x + df2) + logGamma(df1/2) + logGamma(df2/2) - logGamma((df1+df2)/2);
+    return Math.exp(logNum - logDen);
+  }
+
+  // --- DOM refs ---
+  const m1 = document.getElementById('m1'), m2 = document.getElementById('m2'), m3 = document.getElementById('m3');
+  const sd = document.getElementById('sd'), n = document.getElementById('n');
+  const m1Out = document.getElementById('m1Out'), m2Out = document.getElementById('m2Out'), m3Out = document.getElementById('m3Out');
+  const sdOut = document.getElementById('sdOut'), nOut = document.getElementById('nOut');
+  const fVal = document.getElementById('fVal'), pVal = document.getElementById('pVal'), decVal = document.getElementById('decVal');
+  const verdictBox = document.getElementById('verdictBox');
+  const df1Val = document.getElementById('df1Val'), df2Val = document.getElementById('df2Val'), critVal = document.getElementById('critVal');
+
+  // --- Chart.js base config ---
+  Chart.defaults.color = '#b8bdd4';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+  Chart.defaults.font.family = "Inter, sans-serif";
+
+  // --- Scatter chart ---
+  const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+  const scatterChart = new Chart(scatterCtx, {
+    type: 'scatter',
+    data: { datasets: [
+      { label: 'Group A', data: [], backgroundColor: '#ff6b9d', pointRadius: 5 },
+      { label: 'Group B', data: [], backgroundColor: '#7b5cff', pointRadius: 5 },
+      { label: 'Group C', data: [], backgroundColor: '#22d3a5', pointRadius: 5 },
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { title: { display: true, text: 'Group' }, min: 0, max: 4, ticks: { stepSize: 1 } },
+        y: { title: { display: true, text: 'Value' } }
+      },
+      plugins: { legend: { position: 'top' } }
+    }
+  });
+
+  // --- F-distribution chart ---
+  const fDistCtx = document.getElementById('fDistChart').getContext('2d');
+  const fDistChart = new Chart(fDistCtx, {
+    type: 'line',
+    data: { labels: [], datasets: [
+      { label: 'F-distribution PDF', data: [], borderColor: '#00e0c7', backgroundColor: 'rgba(0,224,199,0.15)', fill: true, tension: 0.3, pointRadius: 0 },
+      { label: 'Rejection region (α=0.05)', data: [], borderColor: 'rgba(255,77,109,0.6)', backgroundColor: 'rgba(255,77,109,0.25)', fill: true, tension: 0.3, pointRadius: 0 },
+      { label: 'Observed F', data: [], borderColor: '#22d3a5', borderWidth: 3, pointRadius: 0, borderDash: [6,4] },
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { title: { display: true, text: 'F value' }}, y: { title: { display: true, text: 'Density' }, beginAtZero: true } },
+      plugins: { legend: { position: 'top' } }
+    }
+  });
+
+  // Estimate F critical value via bisection on CDF
+  function fCritical(df1, df2, alpha=0.05) {
+    let lo = 0.001, hi = 50;
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      const p = fPvalue(mid, df1, df2);
+      if (p > alpha) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  // --- Main render ---
+  function render() {
+    m1Out.textContent = m1.value; m2Out.textContent = m2.value; m3Out.textContent = m3.value;
+    sdOut.textContent = sd.value; nOut.textContent = n.value;
+
+    const means = [+m1.value, +m2.value, +m3.value];
+    const sdv = +sd.value, nv = +n.value;
+
+    const groups = means.map(mu => Array.from({ length: nv }, () => gauss(mu, sdv)));
+    const { F, df1, df2, groupMeans } = computeF(groups);
+    const p = fPvalue(F, df1, df2);
+
+    fVal.textContent = isFinite(F) ? F.toFixed(2) : '∞';
+    pVal.textContent = p < 0.0001 ? '<0.0001' : p.toFixed(4);
+    const sig = p < 0.05;
+    decVal.textContent = sig ? '✓ Reject H₀' : '✗ Fail to reject';
+    decVal.style.color = sig ? '#22d3a5' : '#ff4d6d';
+
+    verdictBox.className = 'verdict ' + (p < 0.01 ? 'good' : p < 0.05 ? 'good' : p < 0.1 ? 'warn' : 'bad');
+    verdictBox.textContent = p < 0.01
+      ? `Very strong evidence: F=${F.toFixed(2)} is extremely unlikely under H₀ (p < 0.01). Group differences are statistically significant.`
+      : p < 0.05
+      ? `Significant result: F=${F.toFixed(2)} exceeds the critical value. Group differences are real (at α=0.05).`
+      : p < 0.1
+      ? `Borderline: F=${F.toFixed(2)} is suggestive but doesn't clear the α=0.05 threshold.`
+      : `No significance: F=${F.toFixed(2)} looks like typical random variation.`;
+
+    // Scatter: jitter x so dots don't stack
+    const jitter = () => (Math.random() - 0.5) * 0.5;
+    scatterChart.data.datasets[0].data = groups[0].map(v => ({ x: 1 + jitter(), y: v }));
+    scatterChart.data.datasets[1].data = groups[1].map(v => ({ x: 2 + jitter(), y: v }));
+    scatterChart.data.datasets[2].data = groups[2].map(v => ({ x: 3 + jitter(), y: v }));
+    scatterChart.update('none');
+
+    // F-distribution curve
+    const crit = fCritical(df1, df2);
+    const xMax = Math.max(crit * 3, F * 1.2, 6);
+    const step = xMax / 200;
+    const xs = [], ys = [], rejs = [];
+    for (let x = step; x <= xMax; x += step) {
+      xs.push(x.toFixed(2));
+      const y = fPdf(x, df1, df2);
+      ys.push(y);
+      rejs.push(x >= crit ? y : null);
+    }
+    fDistChart.data.labels = xs;
+    fDistChart.data.datasets[0].data = ys;
+    fDistChart.data.datasets[1].data = rejs;
+    fDistChart.data.datasets[2].data = xs.map(x => +x >= F && +x - step < F ? Math.max(...ys) : null);
+    fDistChart.update('none');
+
+    df1Val.textContent = df1;
+    df2Val.textContent = df2;
+    critVal.textContent = crit.toFixed(2);
+  }
+
+  [m1, m2, m3, sd, n].forEach(el => el.addEventListener('input', render));
+  document.getElementById('resample').addEventListener('click', render);
+  document.getElementById('preset1').addEventListener('click', () => {
+    m1.value = 78; m2.value = 80; m3.value = 82; sd.value = 12; n.value = 15; render();
+  });
+  document.getElementById('preset2').addEventListener('click', () => {
+    m1.value = 65; m2.value = 80; m3.value = 95; sd.value = 2; n.value = 25; render();
+  });
+
+  // --- Comparison mini charts ---
+  function miniChart(id, means, sdv, nv, colorSet) {
+    const ctx = document.getElementById(id).getContext('2d');
+    const groups = means.map(mu => Array.from({ length: nv }, () => gauss(mu, sdv)));
+    return new Chart(ctx, {
+      type: 'scatter',
+      data: { datasets: groups.map((g, i) => ({
+        label: 'Group ' + String.fromCharCode(65+i),
+        data: g.map(v => ({ x: (i+1) + (Math.random()-0.5)*0.4, y: v })),
+        backgroundColor: colorSet[i], pointRadius: 4
+      }))},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { min: 0, max: 4, ticks: { stepSize: 1 } },
+          y: { }
+        },
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }}}}
+      }
+    });
+  }
+  miniChart('lowFChart', [78, 80, 82], 10, 20, ['#ff6b9d', '#7b5cff', '#22d3a5']);
+  miniChart('highFChart', [65, 80, 95], 2, 20, ['#ff6b9d', '#7b5cff', '#22d3a5']);
+
+  // --- Histogram under H0 ---
+  let histChart;
+  function initHist() {
+    const ctx = document.getElementById('histChart').getContext('2d');
+    histChart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'Frequency', data: [], backgroundColor: 'rgba(123,92,255,0.6)', borderColor: '#7b5cff', borderWidth: 1 }]},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { x: { title: { display: true, text: 'F value'}}, y: { title: { display: true, text: 'Count' }}},
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+  initHist();
+
+  document.getElementById('runSim').addEventListener('click', () => {
+    const status = document.getElementById('simStatus');
+    status.textContent = 'Running...';
+    setTimeout(() => {
+      const fs = [];
+      for (let t = 0; t < 1000; t++) {
+        const groups = [
+          Array.from({ length: 20 }, () => gauss(80, 5)),
+          Array.from({ length: 20 }, () => gauss(80, 5)),
+          Array.from({ length: 20 }, () => gauss(80, 5)),
+        ];
+        fs.push(computeF(groups).F);
+      }
+      // Bin into histogram
+      const binCount = 30, max = 7;
+      const bins = Array(binCount).fill(0);
+      for (const f of fs) {
+        if (f > max) continue;
+        const idx = Math.min(binCount - 1, Math.floor((f / max) * binCount));
+        bins[idx]++;
+      }
+      const labels = bins.map((_, i) => ((i + 0.5) * max / binCount).toFixed(2));
+      const colors = bins.map((_, i) => ((i + 0.5) * max / binCount) >= 3.15 ? 'rgba(255,77,109,0.75)' : 'rgba(123,92,255,0.6)');
+      histChart.data.labels = labels;
+      histChart.data.datasets[0].data = bins;
+      histChart.data.datasets[0].backgroundColor = colors;
+      histChart.update();
+      const tail = fs.filter(f => f >= 3.15).length;
+      status.innerHTML = `Done. ${tail}/1000 runs exceeded the critical value (~${(tail/10).toFixed(1)}% — close to the expected 5%).`;
+    }, 50);
+  });
+
+  render();
+</script>
+</body>
+</html>

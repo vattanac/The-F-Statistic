@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>F-Statistic Explained — 2026 Interactive Guide</title>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  :root {
+    --bg-0: #0a0b14;
+    --bg-1: #111322;
+    --bg-2: #161a2e;
+    --bg-3: #1e2340;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --text-0: #f1f3fb;
+    --text-1: #b8bdd4;
+    --text-2: #7d83a0;
+    --accent: #7b5cff;
+    --accent-2: #00e0c7;
+    --accent-3: #ff6b9d;
+    --accent-4: #ffb648;
+    --danger: #ff4d6d;
+    --success: #22d3a5;
+    --glow: 0 0 40px rgba(123, 92, 255, 0.35);
+    --card-grad: linear-gradient(135deg, rgba(123, 92, 255, 0.08), rgba(0, 224, 199, 0.04));
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font);
+    background:
+      radial-gradient(1200px 700px at 85% -10%, rgba(123, 92, 255, 0.18), transparent 50%),
+      radial-gradient(900px 600px at -5% 30%, rgba(0, 224, 199, 0.12), transparent 55%),
+      radial-gradient(800px 500px at 50% 110%, rgba(255, 107, 157, 0.10), transparent 55%),
+      var(--bg-0);
+    color: var(--text-0);
+    min-height: 100vh;
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  /* ---------------- LAYOUT ---------------- */
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---------------- SIDEBAR ---------------- */
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(17, 19, 34, 0.95), rgba(10, 11, 20, 0.95));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid var(--border);
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    z-index: 10;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 10px 22px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 18px;
+  }
+  .brand .logo {
+    width: 38px; height: 38px;
+    border-radius: 11px;
+    background: conic-gradient(from 210deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+    display: grid; place-items: center;
+    font-weight: 800;
+    font-size: 17px;
+    color: #0a0b14;
+    box-shadow: var(--glow);
+  }
+  .brand .title { font-weight: 700; font-size: 15px; letter-spacing: 0.2px; }
+  .brand .subtitle { font-size: 11px; color: var(--text-2); margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .nav-label {
+    font-size: 10.5px;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    padding: 8px 12px;
+    margin-top: 10px;
+  }
+
+  .nav a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    color: var(--text-1);
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    margin: 2px 0;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .nav a:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-0);
+  }
+  .nav a.active {
+    background: linear-gradient(90deg, rgba(123, 92, 255, 0.18), rgba(123, 92, 255, 0.02));
+    color: var(--text-0);
+  }
+  .nav a.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 3px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  }
+  .nav .icon {
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 12px;
+  }
+
+  .side-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-2);
+  }
+  .side-footer .chip {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(0, 224, 199, 0.12);
+    color: var(--accent-2);
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 10px;
+    letter-spacing: 0.6px;
+  }
+
+  /* ---------------- MAIN ---------------- */
+  main { padding: 48px 56px 80px; max-width: 1100px; }
+
+  .hero {
+    position: relative;
+    padding: 48px 44px;
+    border-radius: 22px;
+    background:
+      radial-gradient(600px 300px at 85% 0%, rgba(123, 92, 255, 0.28), transparent 70%),
+      linear-gradient(135deg, rgba(30, 35, 64, 0.6), rgba(17, 19, 34, 0.8));
+    border: 1px solid var(--border-strong);
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11.5px; letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--accent-2); font-weight: 600;
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(0, 224, 199, 0.10);
+    border: 1px solid rgba(0, 224, 199, 0.25);
+  }
+  .hero h1 {
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin: 18px 0 14px;
+    background: linear-gradient(120deg, #fff 20%, #b8bdd4 60%, #7b5cff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p.lead {
+    font-size: 17px; color: var(--text-1); max-width: 760px;
+  }
+  .hero .meta {
+    display: flex; gap: 18px; margin-top: 26px; flex-wrap: wrap;
+  }
+  .hero .meta .pill {
+    font-size: 12px; color: var(--text-1);
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    padding: 7px 13px; border-radius: 999px;
+  }
+  .hero .meta .pill strong { color: var(--text-0); font-weight: 600; }
+
+  /* ---------------- SECTION ---------------- */
+  section { margin-bottom: 64px; scroll-margin-top: 24px; }
+  section h2 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.01em;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  section h2 .num {
+    display: inline-grid; place-items: center;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(123,92,255,0.22), rgba(0,224,199,0.12));
+    border: 1px solid var(--border-strong);
+    font-size: 14px; font-weight: 700; color: var(--accent-2);
+  }
+  section .kicker {
+    font-size: 13px; color: var(--text-2); margin-bottom: 20px;
+    padding-left: 50px;
+  }
+  section p { color: var(--text-1); margin-bottom: 14px; font-size: 15.5px; }
+  section strong { color: var(--text-0); font-weight: 600; }
+
+  /* ---------------- CARDS ---------------- */
+  .card {
+    background: var(--card-grad), var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px 28px;
+    margin: 18px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .card h3 {
+    font-size: 17px; font-weight: 600; margin-bottom: 10px; color: var(--text-0);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .stat-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    transition: all 0.25s ease;
+  }
+  .stat-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+  }
+  .stat-card .icon-round {
+    width: 40px; height: 40px;
+    border-radius: 11px;
+    display: grid; place-items: center;
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+  .stat-card .label { font-size: 12px; color: var(--text-2); letter-spacing: 0.4px; text-transform: uppercase; font-weight: 600; }
+  .stat-card .value { font-size: 22px; font-weight: 700; margin: 6px 0; }
+  .stat-card p { font-size: 13.5px; color: var(--text-1); margin: 0; }
+
+  /* Highlight boxes */
+  .highlight {
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    background: rgba(123, 92, 255, 0.06);
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 15px;
+    color: var(--text-1);
+  }
+  .highlight.teal { border-color: var(--accent-2); background: rgba(0, 224, 199, 0.06); }
+  .highlight.pink { border-color: var(--accent-3); background: rgba(255, 107, 157, 0.06); }
+  .highlight.warn { border-color: var(--accent-4); background: rgba(255, 182, 72, 0.07); }
+
+  /* Formula box */
+  .formula-box {
+    background: linear-gradient(135deg, rgba(17,19,34,0.9), rgba(30,35,64,0.8));
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 28px;
+    margin: 18px 0;
+    text-align: center;
+    font-size: 18px;
+    overflow-x: auto;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 9px; border-radius: 6px;
+    letter-spacing: 0.4px;
+  }
+  .tag.signal { background: rgba(0,224,199,0.15); color: var(--accent-2); }
+  .tag.noise  { background: rgba(255,107,157,0.15); color: var(--accent-3); }
+  .tag.good   { background: rgba(34,211,165,0.15); color: var(--success); }
+  .tag.bad    { background: rgba(255,77,109,0.15); color: var(--danger); }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th, td {
+    text-align: left; padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  th {
+    font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--text-2); font-weight: 600;
+  }
+  td { color: var(--text-1); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Interactive visualization */
+  .visual-demo {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 18px 0;
+  }
+  .visual-demo .demo-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  @media (max-width: 800px) { .visual-demo .demo-grid { grid-template-columns: 1fr; } }
+
+  .svg-box {
+    background: #ffe4ec;
+    border: 3px solid #ff4d6d;
+    border-radius: 12px;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    overflow: hidden;
+  }
+  .svg-label {
+    position: absolute;
+    bottom: 10px; right: 14px;
+    font-size: 18px; font-weight: 700; color: #3b0a1a;
+    font-family: 'Times New Roman', serif; font-style: italic;
+  }
+
+  /* Slider */
+  .slider-wrap {
+    margin-top: 18px;
+    padding: 16px;
+    background: var(--bg-1);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .slider-wrap label { display: block; font-size: 12px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .slider-wrap .value-out { color: var(--accent-2); font-weight: 700; font-size: 15px; }
+  input[type="range"] {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 5px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(123,92,255,0.3);
+  }
+  .f-readout {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-top: 14px; padding: 14px 18px;
+    background: var(--bg-3); border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .f-readout .big {
+    font-size: 32px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Step list */
+  .steps { counter-reset: step; margin: 20px 0; }
+  .step {
+    display: grid; grid-template-columns: 42px 1fr; gap: 18px;
+    padding: 18px 0; border-bottom: 1px dashed var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(123,92,255,0.25), rgba(0,224,199,0.15));
+    border: 1px solid var(--border-strong);
+    display: grid; place-items: center;
+    font-weight: 700; color: var(--accent-2);
+  }
+  .step h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text-0); }
+  .step p { margin: 0; font-size: 14.5px; }
+
+  /* P-value meter */
+  .meter {
+    height: 12px; border-radius: 999px; overflow: hidden;
+    background: linear-gradient(90deg, #22d3a5 0%, #22d3a5 5%, #ffb648 5%, #ffb648 10%, #ff4d6d 10%, #ff4d6d 100%);
+    position: relative; margin: 24px 0 10px;
+  }
+  .meter .ticks {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-2); margin-top: 6px;
+  }
+
+  /* Code-ish */
+  code.inline {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    background: rgba(123, 92, 255, 0.12);
+    color: var(--accent-2);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+
+  /* TOC progress */
+  .nav a .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-2);
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .nav a.active .dot { opacity: 1; background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    main { padding: 32px 22px; }
+    .hero { padding: 32px 24px; }
+    .hero h1 { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">F</div>
+      <div>
+        <div class="title">F-Statistic Lab</div>
+        <div class="subtitle">Interactive Guide · 2026</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Overview</div>
+    <nav class="nav">
+      <a href="#intro" class="active"><span class="icon">★</span> Introduction <span class="dot"></span></a>
+      <a href="#intuition"><span class="icon">◐</span> Signal vs Noise <span class="dot"></span></a>
+    </nav>
+
+    <div class="nav-label">Theory</div>
+    <nav class="nav">
+      <a href="#formula"><span class="icon">Σ</span> The Formula <span class="dot"></span></a>
+      <a href="#visual"><span class="icon">◉</span> Visual Intuition <span class="dot"></span></a>
+      <a href="#components"><span class="icon">⊞</span> MSB &amp; MSW <span class="dot"></span></a>
+    </nav>
+
+    <div class="nav-label">Practice</div>
+    <nav class="nav">
+      <a href="#example"><span class="icon">▶</span> Worked Example <span class="dot"></span></a>
+      <a href="#interpret"><span class="icon">⚖</span> Interpreting F <span class="dot"></span></a>
+      <a href="#pvalue"><span class="icon">%</span> P-value &amp; Decision <span class="dot"></span></a>
+    </nav>
+
+    <div class="nav-label">Apply</div>
+    <nav class="nav">
+      <a href="#playground"><span class="icon">⚡</span> Playground <span class="dot"></span></a>
+      <a href="#usecases"><span class="icon">◆</span> Real Applications <span class="dot"></span></a>
+      <a href="#summary"><span class="icon">✓</span> Summary <span class="dot"></span></a>
+    </nav>
+
+    <div class="nav-label">Extras</div>
+    <nav class="nav">
+      <a href="f-statistic-visualizations.html" style="background: linear-gradient(90deg, rgba(0,224,199,0.15), rgba(0,224,199,0.02)); color: var(--accent-2); font-weight: 600;">
+        <span class="icon" style="background:rgba(0,224,199,0.15); color:var(--accent-2);">📊</span> Visualization Lab →
+      </a>
+    </nav>
+
+    <div class="side-footer">
+      <span class="chip">● LIVE GUIDE</span>
+      <div>A modern interactive walkthrough of the F-statistic — signal versus noise in analysis of variance.</div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <!-- HERO -->
+    <div class="hero">
+      <span class="eyebrow">● Statistics · ANOVA · 2026 Edition</span>
+      <h1>The F-Statistic,<br/>Fully Explained.</h1>
+      <p class="lead">A step-by-step, visual, and interactive guide to one of the most useful tools in statistics — the ratio that decides whether group differences are real signal or just random noise.</p>
+      <div class="meta">
+        <span class="pill"><strong>⏱ Read time:</strong> 10 min</span>
+        <span class="pill"><strong>🎯 Level:</strong> Beginner → Intermediate</span>
+        <span class="pill"><strong>🔬 Topic:</strong> ANOVA · Hypothesis Testing</span>
+      </div>
+      <div style="margin-top:24px;">
+        <a href="f-statistic-visualizations.html" style="display:inline-flex; align-items:center; gap:10px; padding:12px 22px; font-size:14px; font-weight:600; border-radius:12px; text-decoration:none; background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: #0a0b14; box-shadow: 0 8px 24px rgba(0, 224, 199, 0.25); transition: transform 0.2s;">📊 Open Visualization Lab →</a>
+      </div>
+    </div>
+
+    <!-- SECTION 1: INTRO -->
+    <section id="intro">
+      <h2><span class="num">01</span> Introduction</h2>
+      <div class="kicker">What the F-statistic is and why it matters</div>
+
+      <p>The <strong>F-statistic</strong> is a number that tells us whether the differences we see between groups are <em>real</em> or simply <em>random fluctuation</em>. It's the heart of a technique called <strong>ANOVA</strong> (Analysis of Variance), used every day in science, business, medicine, and machine learning.</p>
+
+      <div class="highlight teal">
+        <strong>Core idea:</strong> Any time you compare 3 or more groups (classrooms, drugs, ad campaigns, store locations), you need a principled way to ask: <em>"Are these groups actually different, or did chance just make them look different?"</em> The F-statistic answers that.
+      </div>
+
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(0,224,199,0.12); color:var(--accent-2);">📊</div>
+          <div class="label">Definition</div>
+          <div class="value">Ratio</div>
+          <p>Between-group variation divided by within-group variation.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(123,92,255,0.15); color:var(--accent);">🎚</div>
+          <div class="label">Interprets As</div>
+          <div class="value">Signal ÷ Noise</div>
+          <p>How loud the group differences are versus background randomness.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,107,157,0.15); color:var(--accent-3);">✅</div>
+          <div class="label">Validated By</div>
+          <div class="value">P-value</div>
+          <p>Evaluated against the F-distribution to ensure statistical rigor.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: INTUITION -->
+    <section id="intuition">
+      <h2><span class="num">02</span> Signal vs. Noise</h2>
+      <div class="kicker">The heart of every F-statistic</div>
+
+      <p>Imagine you're trying to hear a friend speak at a loud concert. Two things matter: how loud your friend's voice is (the <span class="tag signal">SIGNAL</span>), and how loud the crowd is (the <span class="tag noise">NOISE</span>).</p>
+
+      <p>The F-statistic does exactly the same thing for data. It asks: <strong>how big is the difference between group averages compared to how much random spread there is inside each group?</strong></p>
+
+      <div class="formula-box">
+        $$F = \frac{\text{Between-group variation (SIGNAL)}}{\text{Within-group variation (NOISE)}}$$
+      </div>
+
+      <div class="grid-2">
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(34,211,165,0.15); color:var(--success);">📢</div>
+          <div class="label">Strong signal</div>
+          <div class="value">F &gt;&gt; 1</div>
+          <p>Group averages are far apart and data points within each group are tightly packed. You can hear your friend clearly.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,77,109,0.15); color:var(--danger);">🔇</div>
+          <div class="label">Lost in noise</div>
+          <div class="value">F ≈ 1 or less</div>
+          <p>Group averages are close together or noise is huge — the crowd drowns everything out.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: FORMULA -->
+    <section id="formula">
+      <h2><span class="num">03</span> The Formula</h2>
+      <div class="kicker">From plain English to math</div>
+
+      <div class="card">
+        <h3>1️⃣ Plain English</h3>
+        <div class="formula-box">
+          $$F = \frac{\text{how different the group means are}}{\text{how noisy the data is}}$$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>2️⃣ Statistical Shorthand</h3>
+        <div class="formula-box">
+          $$F = \frac{\text{MSB (Mean Square Between)}}{\text{MSW (Mean Square Within)}}$$
+        </div>
+        <p><code class="inline">MSB</code> = how spread out the group averages are from the grand mean.</p>
+        <p><code class="inline">MSW</code> = how spread out individual data points are from their own group mean.</p>
+      </div>
+
+      <div class="card">
+        <h3>3️⃣ Mathematical Form</h3>
+        <div class="formula-box">
+          $$F = \frac{\dfrac{\sum_{i=1}^{k} n_i (\bar{x}_i - \bar{x})^2}{k - 1}}{\dfrac{\sum_{i=1}^{k} \sum_{j=1}^{n_i} (x_{ij} - \bar{x}_i)^2}{N - k}}$$
+        </div>
+        <table>
+          <thead>
+            <tr><th>Symbol</th><th>Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code class="inline">k</code></td><td>Number of groups</td></tr>
+            <tr><td><code class="inline">n_i</code></td><td>Size of group <em>i</em></td></tr>
+            <tr><td><code class="inline">N</code></td><td>Total number of observations across all groups</td></tr>
+            <tr><td><code class="inline">x̄ᵢ</code></td><td>Mean of group <em>i</em></td></tr>
+            <tr><td><code class="inline">x̄</code></td><td>Grand mean (mean of all data)</td></tr>
+            <tr><td><code class="inline">xᵢⱼ</code></td><td>Individual data point <em>j</em> in group <em>i</em></td></tr>
+            <tr><td><code class="inline">k − 1</code></td><td>Between-group degrees of freedom</td></tr>
+            <tr><td><code class="inline">N − k</code></td><td>Within-group degrees of freedom</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 4: VISUAL -->
+    <section id="visual">
+      <h2><span class="num">04</span> Visual Intuition</h2>
+      <div class="kicker">Picturing F &lt; 1 versus F &gt; 1</div>
+
+      <p>The easiest way to feel what F means is to look at how groups overlap. When groups are tangled together, F is small. When groups sit in their own neighborhoods, F is large.</p>
+
+      <div class="visual-demo">
+        <div class="demo-grid">
+          <!-- F < 1 -->
+          <div>
+            <div class="svg-box">
+              <svg viewBox="0 0 200 200" width="100%" height="100%">
+                <circle cx="70"  cy="80"  r="75" fill="rgba(233, 99, 160, 0.45)"/>
+                <circle cx="130" cy="80"  r="75" fill="rgba(93, 103, 230, 0.45)"/>
+                <circle cx="100" cy="130" r="75" fill="rgba(93, 200, 120, 0.45)"/>
+                <circle cx="88"  cy="95"  r="4"  fill="#703c1a"/>
+                <circle cx="120" cy="95"  r="4"  fill="#1f4bb3"/>
+                <circle cx="100" cy="125" r="4"  fill="#1b7d3a"/>
+              </svg>
+              <div class="svg-label">F &lt; 1</div>
+            </div>
+            <div style="margin-top:12px;">
+              <span class="tag bad">High noise</span>
+              <span class="tag bad">Small separation</span>
+            </div>
+            <p style="margin-top:10px; font-size:13.5px; color:var(--text-1);">Groups overlap heavily. Group means sit inside the shared zone — you can't reliably tell groups apart.</p>
+          </div>
+
+          <!-- F > 1 -->
+          <div>
+            <div class="svg-box">
+              <svg viewBox="0 0 200 200" width="100%" height="100%">
+                <circle cx="55"  cy="55"  r="22" fill="rgba(233, 99, 160, 0.45)"/>
+                <circle cx="150" cy="55"  r="22" fill="rgba(93, 103, 230, 0.45)"/>
+                <circle cx="100" cy="150" r="22" fill="rgba(93, 200, 120, 0.45)"/>
+                <circle cx="55"  cy="55"  r="5"  fill="#a8195a"/>
+                <circle cx="150" cy="55"  r="5"  fill="#15259e"/>
+                <circle cx="100" cy="150" r="5"  fill="#0e6a2b"/>
+              </svg>
+              <div class="svg-label">F &gt; 1</div>
+            </div>
+            <div style="margin-top:12px;">
+              <span class="tag good">Low noise</span>
+              <span class="tag good">Clear separation</span>
+            </div>
+            <p style="margin-top:10px; font-size:13.5px; color:var(--text-1);">Groups sit in their own corners with tight spread. Differences are real and easy to trust.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight">
+        The <strong>tighter</strong> each group's circle (less noise), and the <strong>farther apart</strong> the circles sit (more signal), the <strong>larger</strong> the F-statistic becomes.
+      </div>
+    </section>
+
+    <!-- SECTION 5: COMPONENTS -->
+    <section id="components">
+      <h2><span class="num">05</span> MSB &amp; MSW Explained</h2>
+      <div class="kicker">Breaking the formula into two digestible halves</div>
+
+      <div class="grid-2">
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(0,224,199,0.15); color:var(--accent-2);">⬆</div>
+          <div class="label">Numerator — MSB</div>
+          <div class="value">Between-group Variance</div>
+          <p><strong>Question asked:</strong> How far is each group's average from the overall average?</p>
+          <p style="margin-top:10px;"><strong>If big:</strong> groups behave differently → potential signal.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,107,157,0.15); color:var(--accent-3);">⬇</div>
+          <div class="label">Denominator — MSW</div>
+          <div class="value">Within-group Variance</div>
+          <p><strong>Question asked:</strong> How far is each data point from its own group's average?</p>
+          <p style="margin-top:10px;"><strong>If big:</strong> lots of randomness inside groups → lots of noise.</p>
+        </div>
+      </div>
+
+      <div class="highlight teal">
+        Both MSB and MSW are <strong>averaged variances</strong> — that's why we divide by degrees of freedom (<code class="inline">k−1</code> and <code class="inline">N−k</code>). This keeps the comparison fair regardless of how many groups or samples you have.
+      </div>
+    </section>
+
+    <!-- SECTION 6: EXAMPLE -->
+    <section id="example">
+      <h2><span class="num">06</span> Worked Example</h2>
+      <div class="kicker">Three teaching methods, one clear answer</div>
+
+      <p>A school tests three teaching methods on three groups of 3 students each. Here are the test scores:</p>
+
+      <table>
+        <thead>
+          <tr><th>Group</th><th>Scores</th><th>Group Mean (x̄ᵢ)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Method A</strong></td><td>70, 72, 74</td><td>72</td></tr>
+          <tr><td><strong>Method B</strong></td><td>78, 80, 82</td><td>80</td></tr>
+          <tr><td><strong>Method C</strong></td><td>86, 88, 90</td><td>88</td></tr>
+          <tr><td colspan="2"><em>Grand mean (x̄)</em></td><td><strong>80</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="steps">
+        <div class="step">
+          <div>
+            <h4>Compute Between-Group Sum of Squares (SSB)</h4>
+            <p>SSB = 3·(72−80)² + 3·(80−80)² + 3·(88−80)² = 3·64 + 0 + 3·64 = <strong>384</strong></p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>Divide by degrees of freedom (k − 1 = 2)</h4>
+            <p>MSB = 384 / 2 = <strong>192</strong></p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>Compute Within-Group Sum of Squares (SSW)</h4>
+            <p>For each group, sum squared distances from its mean. Each group contributes (−2)² + 0² + 2² = 8. Total SSW = 8 · 3 = <strong>24</strong></p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>Divide by degrees of freedom (N − k = 6)</h4>
+            <p>MSW = 24 / 6 = <strong>4</strong></p>
+          </div>
+        </div>
+        <div class="step">
+          <div>
+            <h4>Compute F</h4>
+            <p>F = MSB ÷ MSW = 192 ÷ 4 = <strong style="color:var(--accent-2); font-size:20px;">48</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight teal">
+        <strong>F = 48</strong> is extremely large. The between-group signal is 48× bigger than the within-group noise. This strongly suggests the teaching methods are genuinely different (we'd still confirm with a p-value, but it will clearly be tiny).
+      </div>
+    </section>
+
+    <!-- SECTION 7: INTERPRETING -->
+    <section id="interpret">
+      <h2><span class="num">07</span> Interpreting F Values</h2>
+      <div class="kicker">What different F values tell you</div>
+
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,77,109,0.15); color:var(--danger);">◑</div>
+          <div class="label">F ≤ 1</div>
+          <div class="value">No evidence</div>
+          <p>Between-group differences are no bigger than normal random variation. Treat groups as equivalent.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,182,72,0.15); color:var(--accent-4);">◐</div>
+          <div class="label">1 &lt; F &lt; critical</div>
+          <div class="value">Inconclusive</div>
+          <p>Possible difference, but could still be random. Must check the p-value against the F-distribution.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(34,211,165,0.15); color:var(--success);">●</div>
+          <div class="label">F ≫ critical</div>
+          <div class="value">Strong evidence</div>
+          <p>Very unlikely this ratio arose from chance alone. Group differences are almost certainly real.</p>
+        </div>
+      </div>
+
+      <div class="highlight warn">
+        ⚠ <strong>F &gt; 1 is not enough on its own.</strong> Whether F = 1.8 is "big" depends on how many groups and samples you have. The final judgment comes from comparing F to the F-distribution.
+      </div>
+    </section>
+
+    <!-- SECTION 8: P-VALUE -->
+    <section id="pvalue">
+      <h2><span class="num">08</span> P-value &amp; Decision</h2>
+      <div class="kicker">Turning F into a statistically valid conclusion</div>
+
+      <p>The F-distribution is a reference curve showing what F values look like <em>if groups were actually identical</em>. We plug our computed F into this distribution and read off a <strong>p-value</strong> — the probability of observing an F this large (or larger) by pure chance.</p>
+
+      <div class="meter"></div>
+      <div class="ticks" style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-2);">
+        <span>0</span><span>0.05</span><span>0.10</span><span>1.0</span>
+      </div>
+
+      <div class="grid-2" style="margin-top:24px;">
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(34,211,165,0.15); color:var(--success);">✓</div>
+          <div class="label">Small p-value (&lt; 0.05)</div>
+          <div class="value">Reject H₀</div>
+          <p>The observed F is very unlikely under the "no difference" hypothesis → group differences are <strong>statistically significant</strong>.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,77,109,0.15); color:var(--danger);">✗</div>
+          <div class="label">Large p-value (≥ 0.05)</div>
+          <div class="value">Fail to reject H₀</div>
+          <p>The F-value could easily have appeared by chance. You can't conclude groups are different.</p>
+        </div>
+      </div>
+
+      <div class="highlight">
+        <strong>Null hypothesis (H₀):</strong> All group means are equal.<br/>
+        <strong>Alternative (H₁):</strong> At least one group mean is different.<br/>
+        The p-value tells you how much evidence you have to reject H₀.
+      </div>
+    </section>
+
+    <!-- SECTION 9: PLAYGROUND -->
+    <section id="playground">
+      <h2><span class="num">09</span> Interactive Playground</h2>
+      <div class="kicker">Tune the signal and the noise, watch F respond</div>
+
+      <div class="visual-demo">
+        <p style="color:var(--text-1); font-size:14px;">Adjust the sliders to see how between-group separation and within-group spread change the F-statistic.</p>
+
+        <div class="slider-wrap">
+          <label>Between-group spread (signal) — <span class="value-out" id="signalOut">8</span></label>
+          <input type="range" id="signal" min="0" max="20" value="8" />
+        </div>
+
+        <div class="slider-wrap">
+          <label>Within-group spread (noise) — <span class="value-out" id="noiseOut">2</span></label>
+          <input type="range" id="noise" min="1" max="20" value="2" />
+        </div>
+
+        <div class="f-readout">
+          <div>
+            <div style="font-size:11px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.6px;">Computed F-statistic</div>
+            <div class="big" id="fOut">16.00</div>
+          </div>
+          <div id="verdict" style="text-align:right; font-size:14px;"></div>
+        </div>
+
+        <svg id="playSvg" viewBox="0 0 400 200" width="100%" height="200" style="margin-top:18px; background:var(--bg-3); border-radius:12px;"></svg>
+      </div>
+    </section>
+
+    <!-- SECTION 10: USE CASES -->
+    <section id="usecases">
+      <h2><span class="num">10</span> Real-World Applications</h2>
+      <div class="kicker">Where F-statistics are used every day</div>
+
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(123,92,255,0.15); color:var(--accent);">🧪</div>
+          <div class="label">Medicine</div>
+          <div class="value">Drug Trials</div>
+          <p>Comparing outcomes across placebo and multiple drug doses to see if any dose works.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(0,224,199,0.15); color:var(--accent-2);">📈</div>
+          <div class="label">Marketing</div>
+          <div class="value">A/B/n Tests</div>
+          <p>Deciding whether multiple ad variants have truly different conversion rates.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,107,157,0.15); color:var(--accent-3);">🎓</div>
+          <div class="label">Education</div>
+          <div class="value">Teaching Methods</div>
+          <p>Comparing student performance under different curricula or instructional strategies.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(255,182,72,0.15); color:var(--accent-4);">🏭</div>
+          <div class="label">Manufacturing</div>
+          <div class="value">Quality Control</div>
+          <p>Checking whether products from different factories have the same defect rates.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(34,211,165,0.15); color:var(--success);">🤖</div>
+          <div class="label">Machine Learning</div>
+          <div class="value">Feature Selection</div>
+          <p>ANOVA F-test selects features whose means differ most across classes.</p>
+        </div>
+        <div class="stat-card">
+          <div class="icon-round" style="background:rgba(123,92,255,0.15); color:var(--accent);">🌾</div>
+          <div class="label">Agriculture</div>
+          <div class="value">Crop Yields</div>
+          <p>Testing whether fertilizer types produce significantly different yields.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 11: SUMMARY -->
+    <section id="summary">
+      <h2><span class="num">11</span> Summary</h2>
+      <div class="kicker">Everything you need to remember</div>
+
+      <div class="card">
+        <h3>🧠 Key Takeaways</h3>
+        <div class="steps">
+          <div class="step"><div><h4>F is a ratio</h4><p>Between-group variance (signal) ÷ within-group variance (noise).</p></div></div>
+          <div class="step"><div><h4>F ≤ 1 → probably nothing</h4><p>Observed differences look like typical randomness.</p></div></div>
+          <div class="step"><div><h4>F ≫ 1 → possibly something</h4><p>Group means stand apart from the noise floor.</p></div></div>
+          <div class="step"><div><h4>Always check the p-value</h4><p>Compare F against the F-distribution for a rigorous decision.</p></div></div>
+          <div class="step"><div><h4>Statistical significance ≠ practical importance</h4><p>Even a "real" difference might be too small to matter in practice.</p></div></div>
+        </div>
+      </div>
+
+      <div class="highlight teal">
+        <strong>One-line memory hook:</strong> F measures <em>how loud the signal is relative to the noise</em>, and the p-value tells you <em>whether that loudness is surprising enough to trust</em>.
+      </div>
+
+      <div class="card" style="text-align:center; margin-top:28px; background: radial-gradient(500px 200px at 50% 0%, rgba(0, 224, 199, 0.12), transparent 70%), var(--bg-1);">
+        <h3>🚀 Ready for the interactive experience?</h3>
+        <p style="color:var(--text-1); margin:10px auto 20px; max-width:600px;">Dive into the Visualization Lab — a fully interactive companion page with live ANOVA simulations, real F-distribution curves, 1,000-run Monte Carlo experiments, and scatter plots that respond in real time.</p>
+        <a href="f-statistic-visualizations.html" style="display:inline-flex; align-items:center; gap:10px; padding:14px 26px; font-size:14.5px; font-weight:600; border-radius:12px; text-decoration:none; background: linear-gradient(135deg, var(--accent-2), var(--accent)); color: #0a0b14; box-shadow: 0 8px 24px rgba(0, 224, 199, 0.25);">📊 Launch Visualization Lab →</a>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // Sidebar scrollspy
+  const links = document.querySelectorAll('.nav a');
+  const sections = [...links].map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  function onScroll() {
+    const y = window.scrollY + 120;
+    let current = sections[0];
+    for (const s of sections) { if (s.offsetTop <= y) current = s; }
+    links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + current.id));
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Playground
+  const signal = document.getElementById('signal');
+  const noise  = document.getElementById('noise');
+  const signalOut = document.getElementById('signalOut');
+  const noiseOut  = document.getElementById('noiseOut');
+  const fOut = document.getElementById('fOut');
+  const verdict = document.getElementById('verdict');
+  const svg = document.getElementById('playSvg');
+
+  function render() {
+    const s = +signal.value, n = +noise.value;
+    signalOut.textContent = s;
+    noiseOut.textContent  = n;
+    const f = (s * s) / (n * n || 1);
+    fOut.textContent = f.toFixed(2);
+
+    if (f < 1) verdict.innerHTML = '<span class="tag bad">✗ No evidence</span><div style="margin-top:6px;color:var(--text-2);">Noise dominates — probably random.</div>';
+    else if (f < 4) verdict.innerHTML = '<span class="tag" style="background:rgba(255,182,72,0.15);color:var(--accent-4);">◐ Inconclusive</span><div style="margin-top:6px;color:var(--text-2);">Check the p-value before concluding.</div>';
+    else verdict.innerHTML = '<span class="tag good">✓ Strong signal</span><div style="margin-top:6px;color:var(--text-2);">Likely a real group difference.</div>';
+
+    // Draw 3 groups
+    svg.innerHTML = '';
+    const colors = ['#e9639f', '#5d67e6', '#5dc878'];
+    const centers = [100, 200, 300];
+    const ns = document.createElementNS.bind(document);
+    for (let i = 0; i < 3; i++) {
+      const cx = 200 + (centers[i] - 200) * (s / 10);
+      const cy = 100;
+      const radius = Math.max(6, n * 3);
+      const halo = ns('http://www.w3.org/2000/svg', 'circle');
+      halo.setAttribute('cx', cx);
+      halo.setAttribute('cy', cy);
+      halo.setAttribute('r', radius);
+      halo.setAttribute('fill', colors[i] + '55');
+      svg.appendChild(halo);
+      const dot = ns('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('cx', cx);
+      dot.setAttribute('cy', cy);
+      dot.setAttribute('r', 5);
+      dot.setAttribute('fill', colors[i]);
+      svg.appendChild(dot);
+    }
+  }
+  signal.addEventListener('input', render);
+  noise.addEventListener('input', render);
+  render();
+</script>
+</body>
+</html>
