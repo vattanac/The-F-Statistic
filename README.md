@@ -23,6 +23,8 @@ A modern, interactive 2026-style explainer that teaches the **F-statistic** — 
 
 No server, no install, no dependencies to set up — everything loads via CDN.
 
+**Live Demo:** [https://the-f-statistic.netlify.app/](https://the-f-statistic.netlify.app/)
+
 ---
 
 ## Main Guide (`f-statistic-explained.html`)
