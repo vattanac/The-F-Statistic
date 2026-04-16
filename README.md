@@ -8,7 +8,7 @@ A modern, interactive 2026-style explainer that teaches the **F-statistic** — 
 
 | File | Purpose |
 |------|---------|
-| `f-statistic-explained.html` | Main educational guide with a sticky left sidebar and 11 structured sections. |
+| `index.html` | Main educational guide with a sticky left sidebar and 11 structured sections. |
 | `f-statistic-visualizations.html` | Companion interactive lab with live charts, Monte Carlo simulations, and an ANOVA simulator. |
 | `README.md` | This file. |
 
@@ -16,7 +16,7 @@ A modern, interactive 2026-style explainer that teaches the **F-statistic** — 
 
 ## Quick Start
 
-1. Open `f-statistic-explained.html` in any modern browser (Chrome, Safari, Firefox, Edge).
+1. Open `index.html` in any modern browser (Chrome, Safari, Firefox, Edge).
 2. Use the left sidebar to jump between sections.
 3. Click **"Open Visualization Lab"** in the hero, the sidebar, or the closing card to launch the interactive companion.
 4. From the Visualization Lab, use **"Back to Main Guide"** in the sidebar to return.
@@ -27,7 +27,7 @@ No server, no install, no dependencies to set up — everything loads via CDN.
 
 ---
 
-## Main Guide (`f-statistic-explained.html`)
+## Main Guide (`index.html`)
 
 A text-and-diagram-first walkthrough designed to build intuition before introducing math.
 
